@@ -15,17 +15,37 @@ def main():
         f.write(xml_var[39:146] + '\n')
 
         start_char = 146 # position to start parsing from
+        start_segment = ''
+        end_segment = ''
+        in_start_segment = False
+        in_end_segment = False
 
         # loop through all chars in xml_var
         for char in range(start_char, len(xml_var)):
             f.write(xml_var[char]) # print character
+
+            if in_start_segment and xml_var[char] != '>':
+                start_segment += xml_var[char]
+                # print(start_segment)
+
+            if in_end_segment and xml_var[char] != '>':
+                end_segment += xml_var[char]
+
             if xml_var[char] == '<':
-                pass # add logic
+                in_start_segment = True
+                in_end_segment = False
             elif xml_var[char] == '>':
-                f.write('\n') # doesn't work inherently
+                in_start_segment = False
+                # print(start_segment)
+                if start_segment == end_segment:
+                    print('start segment = end segment')
+                    f.write('\n')
+                # f.write('\n') # doesn't work inherently
+            elif xml_var[char] == '/':
+                in_end_segment = True
+
+
+
             
-
-
-
 if __name__ == '__main__':
     main()
