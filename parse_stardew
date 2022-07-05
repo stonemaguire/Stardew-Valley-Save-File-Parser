@@ -2,47 +2,64 @@
 parses stardew valley save file
 """
 
+# TODO 2 start segments in a row doesn't \n properly
+# TODO keep track of tabs (might need to keep track of start/end segments)
+# TODO figure out start segments with extra words
+# TODO not indenting properly
 
 def main():
     # open SaveGameInfo and store into string variable
-    with open('/Users/stonemaguire/documents/local repos/stardew/perfection run/SaveGameInfo', 'r') as f:
-        xml_var = f.read()
+    with open('./perfection run/SaveGameInfo', 'r') as f:
+        xml_string = f.read()
 
     # open new file to write parsed SaveGameInfo
-    with open('/Users/stonemaguire/documents/local repos/stardew/parsed SaveGameInfo.xml', 'w') as f:
+    with open('./parsed SaveGameInfo.xml', 'w') as f:
         # write first two elements
-        f.write(xml_var[1:39] + '\n')
-        f.write(xml_var[39:146] + '\n')
+        f.write(xml_string[3:41] + '\n\t') # shifted all ranges by 2 (1 -> 3, etc.)
+        f.write(xml_string[41:148] + '\n\t')
 
-        start_char = 146 # position to start parsing from
+        start_char = 148 # position to start parsing from
+        tab_count = 0
         start_segment = ''
         end_segment = ''
+        start_segment_list = []
+        end_segment_list = []
         in_start_segment = False
         in_end_segment = False
 
         # loop through all chars in xml_var
-        for char in range(start_char, len(xml_var)):
-            f.write(xml_var[char]) # print character
+        for char in range(start_char, len(xml_string)):
+            f.write(xml_string[char]) # write char
 
-            if in_start_segment and xml_var[char] != '>':
-                start_segment += xml_var[char]
-                # print(start_segment)
-
-            if in_end_segment and xml_var[char] != '>':
-                end_segment += xml_var[char]
-
-            if xml_var[char] == '<':
+            if xml_string[char] == '<': # in start segment
                 in_start_segment = True
-                in_end_segment = False
-            elif xml_var[char] == '>':
+                continue
+            elif xml_string[char] == '>': # finished start/end segment
                 in_start_segment = False
-                # print(start_segment)
-                if start_segment == end_segment:
-                    print('start segment = end segment')
-                    f.write('\n')
-                # f.write('\n') # doesn't work inherently
-            elif xml_var[char] == '/':
+                in_end_segment = False
+                
+                if start_segment != '':
+                    start_segment_list.append(start_segment)
+                    start_segment = ''
+                    
+                if end_segment != '':
+                    end_segment_list.append(end_segment)
+                    end_segment = ''
+                
+                if set(start_segment_list) & set(end_segment_list):
+                    temp_list = list(set(start_segment_list) & set(end_segment_list))
+                    start_segment_list.pop(start_segment_list.index(temp_list[0]))
+                    end_segment_list.pop(end_segment_list.index(temp_list[0]))
+                    f.write('\n\t')
+            elif xml_string[char] == '/': # in end segment
                 in_end_segment = True
+                continue
+                
+            if in_start_segment and xml_string[char] != '>':
+                start_segment += xml_string[char] # add char to string
+
+            if in_end_segment and xml_string[char] != '>':
+                end_segment += xml_string[char] # add char to string
 
 
 
